@@ -1,16 +1,35 @@
 package com.gateway.templateservice.model;
 
-import java.util.List;
+import javax.persistence.*;
 import java.util.Map;
 
+@Entity
+@Table(name = "templates")
 public class TemplateEntity {
+    
+    @Id
     private String id;
+    
+    @Column(nullable = false)
     private String category;
+    
+    @Column(name = "original_file_name")
     private String originalFileName;
+    
+    @Column(name = "file_type")
     private String fileType;
-    private String storagePath;
-    private Object extractedJson; // parsed content (List<Map<String,String>>)
-    private Map<String, Object> metadataJson; // headers & rules
+    
+    @Lob
+    @Column(name = "file_content")
+    private byte[] fileContent;
+    
+    @Lob
+    @Column(name = "extracted_json")
+    private String extractedJson; // JSON string
+    
+    @Lob
+    @Column(name = "metadata_json")
+    private String metadataJson; // JSON string
 
     public TemplateEntity() {
     }
@@ -48,27 +67,27 @@ public class TemplateEntity {
         this.fileType = fileType;
     }
 
-    public String getStoragePath() {
-        return storagePath;
+    public byte[] getFileContent() {
+        return fileContent;
     }
 
-    public void setStoragePath(String storagePath) {
-        this.storagePath = storagePath;
+    public void setFileContent(byte[] fileContent) {
+        this.fileContent = fileContent;
     }
 
-    public Object getExtractedJson() {
+    public String getExtractedJson() {
         return extractedJson;
     }
 
-    public void setExtractedJson(Object extractedJson) {
+    public void setExtractedJson(String extractedJson) {
         this.extractedJson = extractedJson;
     }
 
-    public Map<String, Object> getMetadataJson() {
+    public String getMetadataJson() {
         return metadataJson;
     }
 
-    public void setMetadataJson(Map<String, Object> metadataJson) {
+    public void setMetadataJson(String metadataJson) {
         this.metadataJson = metadataJson;
     }
 }

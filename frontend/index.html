@@ -1,73 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <title>Template Uploader</title>
-    <link rel="stylesheet" href="./style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Gateway</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <!-- Top orange header bar -->
-    <header class="app-header">
-        <div class="app-header-inner">
-            <span class="app-title">Template Uploader</span>
-        </div>
+    <header class="header">
+        <h1>File Upload Gateway</h1>
     </header>
 
-    <!-- Main card -->
-    <main class="page">
-        <section class="card">
-            <h1 class="card-title">Upload CSV using a template</h1>
-
-            <!-- Top form row: dropdown + file + upload btn -->
-            <div class="form-row">
-                <div class="field-group">
-                    <label for="templateSelect" class="field-label">Choose template</label>
-                    <select id="templateSelect" class="select"></select>
-                    <p id="dropdownError" class="error-msg"></p>
-                </div>
-
-                <div class="field-group field-group-file">
-                    <label for="csvFile" class="field-label">Choose CSV file</label>
-                    <div class="file-row">
-                        <input type="file" id="csvFile" accept=".csv" class="file-input" />
-                        <button id="uploadBtn" class="btn-upload">Upload</button>
+    <main class="container">
+        <div class="card">
+            <!-- Step 1: Select Category and File Type -->
+            <section class="selection-section">
+                <h2>Select Template</h2>
+                <div class="dropdown-row">
+                    <div class="field-group">
+                        <label for="categorySelect">Category</label>
+                        <select id="categorySelect">
+                            <option value="">Select Category</option>
+                        </select>
                     </div>
-                    <p id="uploadStatus" class="status-msg"></p>
-                </div>
-            </div>
-
-            <!-- Template preview -->
-            <div class="preview-wrapper">
-                <div class="preview-header">
-                    <span class="preview-title">Template preview (examples)</span>
-                    <span id="templateName" class="preview-subtitle"></span>
-                </div>
-
-                <div class="preview-table-shell">
-                    <div id="headerPreview" class="header-preview">
-                        <span class="placeholder-text">
-                            Select a template to see sample headers.
-                        </span>
+                    <div class="field-group">
+                        <label for="filetypeSelect">File Type</label>
+                        <select id="filetypeSelect">
+                            <option value="">Select File Type</option>
+                            <option value="csv">CSV</option>
+                            <option value="xlsx">Excel</option>
+                            <option value="txt">Text</option>
+                        </select>
                     </div>
                 </div>
+                <div id="selectionError" class="error-message"></div>
+            </section>
 
-                <p id="previewError" class="error-msg"></p>
-            </div>
+            <!-- Step 2: Template Preview and Download -->
+            <section id="templateSection" class="template-section" style="display: none;">
+                <h2>Template Preview</h2>
+                <div class="template-info">
+                    <div class="template-details">
+                        <div id="templateName" class="template-name"></div>
+                        <div id="headerPreview" class="header-preview"></div>
+                    </div>
+                    <button id="downloadBtn" class="btn btn-download">Download Template</button>
+                </div>
+                <div id="downloadStatus" class="status-message"></div>
+            </section>
 
-            <p class="notes">
-                Notes: "Upload" submits the selected CSV file to the server.
-                To test CSV parsing, upload a small CSV with header + rows.
-            </p>
-        </section>
-
-        <footer class="page-footer">
-            © Demo — Template uploader
-        </footer>
+            <!-- Step 3: Upload File -->
+            <section class="upload-section">
+                <h2>Upload File</h2>
+                <div class="upload-area">
+                    <div class="field-group">
+                        <label for="fileInput">Select File</label>
+                        <input type="file" id="fileInput" accept=".csv,.xlsx,.txt">
+                    </div>
+                    <div class="field-group">
+                        <label for="applicationInput">Application Name</label>
+                        <input type="text" id="applicationInput" placeholder="Enter application name">
+                    </div>
+                    <button id="uploadBtn" class="btn btn-upload">Upload File</button>
+                </div>
+                <div id="uploadStatus" class="status-message"></div>
+            </section>
+        </div>
     </main>
 
-    <script src="./script.js"></script>
+    <script src="script.js"></script>
 </body>
-
 </html>

@@ -27,18 +27,15 @@ document.addEventListener("DOMContentLoaded", () => {
         loadingOption.selected = true;
         categorySelect.appendChild(loadingOption);
 
-        fetch("http://localhost:8081/templates")
+        fetch("http://localhost:8082/api/gateway/templates/categories")
             .then((response) => {
                 if (!response.ok) throw new Error("Network response was not ok");
                 return response.json();
             })
-            .then((templates) => {
+            .then((categories) => {
                 categorySelect.innerHTML = '<option value="">Select Category</option>';
                 
-                // Extract unique categories from templates
-                const uniqueCategories = [...new Set(templates.map(template => template.category))];
-                
-                uniqueCategories.forEach((category) => {
+                categories.forEach((category) => {
                     const option = document.createElement("option");
                     option.value = category;
                     option.textContent = category;
@@ -115,6 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!currentTemplate) return;
         
         downloadStatus.textContent = "";
+        downloadStatus.className = "status-message";
         downloadBtn.disabled = true;
         downloadBtn.textContent = "Downloading...";
         
@@ -136,12 +134,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.URL.revokeObjectURL(url);
                 
                 downloadStatus.textContent = "Template downloaded successfully!";
-                downloadStatus.className = "status-msg success";
+                downloadStatus.className = "status-message success";
             })
             .catch((err) => {
                 console.error("Download error:", err);
                 downloadStatus.textContent = "Download failed. Please try again.";
-                downloadStatus.className = "status-msg error";
+                downloadStatus.className = "status-message error";
             })
             .finally(() => {
                 downloadBtn.disabled = false;
@@ -154,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // =============================
     uploadBtn.addEventListener("click", () => {
         uploadStatus.textContent = "";
-        uploadStatus.className = "status-msg";
+        uploadStatus.className = "status-message";
         
         const file = fileInput.files[0];
         const application = applicationInput.value.trim();
@@ -162,19 +160,19 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (!file) {
             uploadStatus.textContent = "Please select a file to upload.";
-            uploadStatus.classList.add("error");
+            uploadStatus.className = "status-message error";
             return;
         }
         
         if (!application) {
             uploadStatus.textContent = "Please enter an application name.";
-            uploadStatus.classList.add("error");
+            uploadStatus.className = "status-message error";
             return;
         }
         
         if (!category) {
             uploadStatus.textContent = "Please select a category first.";
-            uploadStatus.classList.add("error");
+            uploadStatus.className = "status-message error";
             return;
         }
         
@@ -198,7 +196,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 
                 uploadStatus.textContent = result.message || "File uploaded and validated successfully!";
-                uploadStatus.classList.add("success");
+                uploadStatus.className = "status-message success";
+                
+                // Display the actual JSON response data
+                console.log("=== UPLOAD RESPONSE ===");
+                console.log("Full Response:", result);
+                if (result.data) {
+                    console.log("Extracted JSON Data:", result.data);
+                    console.log("JSON as String:", JSON.stringify(result.data, null, 2));
+                }
                 
                 // Clear form
                 fileInput.value = "";
@@ -207,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch((err) => {
                 console.error("Upload error:", err);
                 uploadStatus.textContent = err.message || "Upload failed. Please try again.";
-                uploadStatus.classList.add("error");
+                uploadStatus.className = "status-message error";
             })
             .finally(() => {
                 uploadBtn.disabled = false;

@@ -40,10 +40,10 @@ public class TemplateServiceImpl implements TemplateService {
 
             byte[] bytes = file.getBytes();
             Object parsed = parseBytes(bytes, ext);
-            entity.setExtractedJson(parsed);
+            entity.setExtractedJson(mapper.writeValueAsString(parsed));
 
             Map<String, Object> meta = buildMetadata(parsed);
-            entity.setMetadataJson(meta);
+            entity.setMetadataJson(mapper.writeValueAsString(meta));
 
             storage.save(entity, bytes);
 
@@ -79,13 +79,19 @@ public class TemplateServiceImpl implements TemplateService {
         TemplateEntity t = storage.findByCategory(category);
         if (t == null)
             throw new RuntimeException("not found");
-        TemplateMetadataResponse resp = new TemplateMetadataResponse();
-        resp.setTemplateName(t.getOriginalFileName());
-        resp.setFileType(t.getFileType());
-        List<String> headers = (List<String>) t.getMetadataJson().get("headers");
-        resp.setHeaders(headers);
-        resp.setStructureRules((Map<String, Object>) t.getMetadataJson().get("rules"));
-        return resp;
+        try {
+            TemplateMetadataResponse resp = new TemplateMetadataResponse();
+            resp.setTemplateName(t.getOriginalFileName());
+            resp.setFileType(t.getFileType());
+            
+            Map<String, Object> metaMap = mapper.readValue(t.getMetadataJson(), Map.class);
+            List<String> headers = (List<String>) metaMap.get("headers");
+            resp.setHeaders(headers);
+            resp.setStructureRules((Map<String, Object>) metaMap.get("rules"));
+            return resp;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -93,7 +99,11 @@ public class TemplateServiceImpl implements TemplateService {
         TemplateEntity t = storage.findByCategory(category);
         if (t == null)
             throw new RuntimeException("not found");
-        return t.getExtractedJson();
+        try {
+            return mapper.readValue(t.getExtractedJson(), Object.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -101,11 +111,7 @@ public class TemplateServiceImpl implements TemplateService {
         TemplateEntity t = storage.findByCategory(category);
         if (t == null)
             return null;
-        try {
-            return storage.getFileBytes(t.getStoragePath());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return storage.getFileBytes(t);
     }
 
     @Override
@@ -115,7 +121,8 @@ public class TemplateServiceImpl implements TemplateService {
             return false;
         try {
             RestTemplate rt = new RestTemplate();
-            rt.postForObject(url, t.getMetadataJson(), String.class);
+            Object metaObj = mapper.readValue(t.getMetadataJson(), Object.class);
+            rt.postForObject(url, metaObj, String.class);
             return true;
         } catch (Exception e) {
             return false;

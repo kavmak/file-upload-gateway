@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -24,6 +25,21 @@ public class TemplateStorage {
         return template.orElse(null);
     }
 
+    public TemplateEntity findByAppHashAndCategory(String appNameHash, String category) {
+        Optional<TemplateEntity> template = templateRepository.findByAppNameHashAndCategory(appNameHash, category);
+        return template.orElse(null);
+    }
+    
+    public List<TemplateEntity> findByAppHash(String appNameHash) {
+        return templateRepository.findByAppNameHash(appNameHash);
+    }
+    
+    public boolean existsByAppHashAndCategory(String appNameHash, String category) {
+        return templateRepository.existsByAppNameHashAndCategory(appNameHash, category);
+    }
+    
+    // Legacy method (keep for backward compatibility)
+    @Deprecated
     public TemplateEntity findByCategory(String category) {
         Optional<TemplateEntity> template = templateRepository.findByCategory(category);
         return template.orElse(null);

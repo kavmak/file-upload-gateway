@@ -48,19 +48,76 @@ public class TemplateController {
         return ResponseEntity.ok("deleted");
     }
 
+    // New app-specific endpoints
+    @GetMapping("/app/{appNameHash}/categories")
+    public ResponseEntity<java.util.List<String>> getAppCategories(@PathVariable String appNameHash) {
+        java.util.List<String> categories = templateService.getCategoriesByAppHash(appNameHash);
+        return ResponseEntity.ok(categories);
+    }
+    
+    @GetMapping("/app/{appNameHash}/{category}/metadata")
+    public ResponseEntity<TemplateMetadataResponse> getAppMetadata(
+            @PathVariable String appNameHash, 
+            @PathVariable String category) {
+        TemplateMetadataResponse meta = templateService.getMetadataByAppAndCategory(appNameHash, category);
+        return ResponseEntity.ok(meta);
+    }
+    
+    @GetMapping("/app/{appNameHash}/{category}/json")
+    public ResponseEntity<Object> getAppJsonPreview(
+            @PathVariable String appNameHash, 
+            @PathVariable String category) {
+        Object json = templateService.getJsonByAppAndCategory(appNameHash, category);
+        return ResponseEntity.ok(json);
+    }
+    
+    @GetMapping("/app/{appNameHash}/{category}/download")
+    public ResponseEntity<InputStreamResource> downloadAppTemplate(
+            @PathVariable String appNameHash, 
+            @PathVariable String category) {
+        
+        byte[] data = templateService.downloadByAppAndCategory(appNameHash, category);
+        if (data == null)
+            return ResponseEntity.notFound().build();
+
+        // Get template entity to extract original filename
+        TemplateEntity template = templateService.getByAppAndCategory(appNameHash, category);
+        String originalFileName = template.getOriginalFileName();
+        String fileExtension = "csv"; // default
+        
+        if (originalFileName != null && originalFileName.contains(".")) {
+            fileExtension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
+        }
+        
+        String fileName = category + "-template." + fileExtension;
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(data.length)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new InputStreamResource(new java.io.ByteArrayInputStream(data)));
+    }
+
+    // Legacy endpoints (deprecated)
     @GetMapping("/{category}/metadata")
+    @Deprecated
     public ResponseEntity<TemplateMetadataResponse> metadata(@PathVariable("category") String category) {
         TemplateMetadataResponse meta = templateService.getMetadataByCategory(category);
         return ResponseEntity.ok(meta);
     }
 
     @GetMapping("/{category}/json")
+    @Deprecated
     public ResponseEntity<Object> jsonPreview(@PathVariable("category") String category) {
         Object json = templateService.getJsonByCategory(category);
         return ResponseEntity.ok(json);
     }
 
     @GetMapping("/{category}/download")
+    @Deprecated
     public ResponseEntity<InputStreamResource> download(
             @PathVariable("category") String category,
             @RequestParam("format") String format) {

@@ -11,17 +11,47 @@ body {
     line-height: 1.6;
 }
 
-.header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem 0;
-    text-align: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+/* ICICI-style header */
+.icici-header {
+    background: linear-gradient(to bottom, #f36f21, #b03912);
+    color: #fff;
+    padding: 10px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
-.header h1 {
-    font-size: 2rem;
-    font-weight: 300;
+.icici-header-logo {
+    height: 44px;
+    display: block;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-name {
+    font-size: 14px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
 }
 
 .container {
@@ -51,7 +81,7 @@ body {
 .selection-section h2,
 .template-section h2,
 .upload-section h2 {
-    color: #667eea;
+    color: #F47920;
     margin-bottom: 1.5rem;
     font-size: 1.3rem;
     font-weight: 500;
@@ -59,9 +89,10 @@ body {
 
 .dropdown-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 1.5rem;
     margin-bottom: 1rem;
+    max-width: 400px;
 }
 
 .field-group {
@@ -89,17 +120,16 @@ select:focus,
 input[type="file"]:focus,
 input[type="text"]:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #F47920;
 }
 
 .template-info {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #f8f9ff;
+    position: relative;
+    background: #FFF3E0;
     padding: 1.5rem;
+    padding-right: 10rem;
     border-radius: 8px;
-    border: 1px solid #e1e5e9;
+    border: 1px solid #FFCC80;
 }
 
 .template-details {
@@ -120,7 +150,7 @@ input[type="text"]:focus {
 }
 
 .header-pill {
-    background: #667eea;
+    background: #F47920;
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
@@ -131,6 +161,41 @@ input[type="text"]:focus {
 .placeholder-text {
     color: #888;
     font-style: italic;
+}
+
+.template-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.template-table th,
+.template-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.template-table th {
+    background: #F47920;
+    color: white;
+    font-weight: 500;
+}
+
+.template-table tbody tr:nth-child(even) {
+    background: #FFF8F0;
+}
+
+.template-table tbody tr:hover {
+    background: #FFE0B2;
+}
+
+.more-rows {
+    text-align: center;
+    font-style: italic;
+    color: #666;
+    background: #f0f0f0 !important;
 }
 
 .upload-area {
@@ -149,23 +214,26 @@ input[type="text"]:focus {
 }
 
 .btn-download {
-    background: #28a745;
+    background: #F47920;
     color: white;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
 }
 
 .btn-download:hover:not(:disabled) {
-    background: #218838;
+    background: #E65100;
     transform: translateY(-1px);
 }
 
 .btn-upload {
-    background: #667eea;
+    background: #F47920;
     color: white;
     justify-self: start;
 }
 
 .btn-upload:hover:not(:disabled) {
-    background: #5a6fd8;
+    background: #E65100;
     transform: translateY(-1px);
 }
 
@@ -173,6 +241,16 @@ input[type="text"]:focus {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+}
+
+.btn-faded {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.btn-active {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .error-message {
@@ -200,6 +278,99 @@ input[type="text"]:focus {
     border: 1px solid #f5c6cb;
 }
 
+.registration-section {
+    padding: 2rem;
+}
+
+.registration-form {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 500px;
+}
+
+.registration-form small {
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.btn-register {
+    background: #f36f21;
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-register:hover:not(:disabled) {
+    background: #b03912;
+    transform: translateY(-1px);
+}
+
+.btn-register:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.success-info {
+    background: #fff3e0;
+    border: 1px solid #f36f21;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.success-info h3 {
+    color: #b03912;
+    margin-bottom: 1rem;
+}
+
+.success-info h4 {
+    color: #f36f21;
+    margin: 1rem 0 0.5rem 0;
+}
+
+.app-hash-info,
+.integration-info {
+    margin-bottom: 1rem;
+}
+
+.hash-display,
+.url-display {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.hash-display input,
+.url-display input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f9f9f9;
+    font-family: monospace;
+}
+
+.btn-copy {
+    background: #f36f21;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.btn-copy:hover {
+    background: #b03912;
+}
+
 @media (max-width: 768px) {
     .dropdown-row {
         grid-template-columns: 1fr;
@@ -218,7 +389,13 @@ input[type="text"]:focus {
     
     .selection-section,
     .template-section,
-    .upload-section {
+    .upload-section,
+    .registration-section {
         padding: 1.5rem;
+    }
+    
+    .hash-display,
+    .url-display {
+        flex-direction: column;
     }
 }

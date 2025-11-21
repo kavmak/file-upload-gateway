@@ -7,8 +7,16 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="header">
-        <h1>File Upload Gateway</h1>
+    <!-- Header -->
+    <header class="icici-header">
+        <div class="header-left">
+            <!-- Use your ICICI header PNG here (change path as needed) -->
+            <img src="ICICI_HeaderLogo.png" alt="ICICI Bank - File Upload Gateway" class="icici-header-logo" />
+        </div>
+        <div class="header-right">
+            <span class="user-name">Welcome, User</span>
+            <div class="user-avatar">U</div>
+        </div>
     </header>
 
     <main class="container">
@@ -21,15 +29,6 @@
                         <label for="categorySelect">Category</label>
                         <select id="categorySelect">
                             <option value="">Select Category</option>
-                        </select>
-                    </div>
-                    <div class="field-group">
-                        <label for="filetypeSelect">File Type</label>
-                        <select id="filetypeSelect">
-                            <option value="">Select File Type</option>
-                            <option value="csv">CSV</option>
-                            <option value="xlsx">Excel</option>
-                            <option value="txt">Text</option>
                         </select>
                     </div>
                 </div>
@@ -57,17 +56,22 @@
                         <label for="fileInput">Select File</label>
                         <input type="file" id="fileInput" accept=".csv,.xlsx,.txt">
                     </div>
-                    <div class="field-group">
-                        <label for="applicationInput">Application Name</label>
-                        <input type="text" id="applicationInput" placeholder="Enter application name">
-                    </div>
-                    <button id="uploadBtn" class="btn btn-upload">Upload File</button>
+                    <button id="uploadBtn" class="btn btn-upload btn-faded">Upload File</button>
                 </div>
                 <div id="uploadStatus" class="status-message"></div>
             </section>
         </div>
     </main>
 
+    <script>
+        // Extract appName from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const appNameHash = urlParams.get('app');
+        
+        if (!appNameHash) {
+            document.body.innerHTML = '<div style="text-align: center; margin-top: 2rem; color: #dc3545;"><h2>Error: Missing app parameter</h2><p>This utility must be called with an app parameter.</p></div>';
+        }
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

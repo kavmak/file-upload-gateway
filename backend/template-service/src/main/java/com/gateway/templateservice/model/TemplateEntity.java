@@ -4,11 +4,22 @@ import javax.persistence.*;
 import java.util.Map;
 
 @Entity
-@Table(name = "templates")
+@Table(name = "templates", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"app_name_hash", "category"})
+})
 public class TemplateEntity {
     
     @Id
     private String id;
+    
+    @Column(name = "app_name", nullable = false)
+    private String appName; // Original app name
+    
+    @Column(name = "app_name_hash", nullable = false)
+    private String appNameHash; // Hashed app name for URL
+    
+    @Column(name = "endpoint", nullable = false)
+    private String endpoint; // API endpoint to send JSON data
     
     @Column(nullable = false)
     private String category;
@@ -49,6 +60,30 @@ public class TemplateEntity {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppNameHash() {
+        return appNameHash;
+    }
+
+    public void setAppNameHash(String appNameHash) {
+        this.appNameHash = appNameHash;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 
     public String getOriginalFileName() {

@@ -8,6 +8,7 @@ public class TemplateMetadataResponse {
     private String fileType;
     private List<String> headers;
     private Map<String, Object> structureRules;
+    private String endpoint;
 
     public TemplateMetadataResponse() {
     }
@@ -43,5 +44,13 @@ public class TemplateMetadataResponse {
 
     public void setStructureRules(Map<String, Object> structureRules) {
         this.structureRules = structureRules;
+    }
+    
+    public String getEndpoint() {
+        return endpoint;
+    }
+    
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 }

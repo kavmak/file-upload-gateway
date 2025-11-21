@@ -1,7 +1,10 @@
 package com.gateway.templateservice.service.impl;
 
+import com.gateway.templateservice.dto.RegistrationRequest;
+import com.gateway.templateservice.dto.RegistrationResponse;
 import com.gateway.templateservice.dto.TemplateMetadataResponse;
 import com.gateway.templateservice.dto.TemplateResponse;
+import com.gateway.templateservice.util.HashUtil;
 import com.gateway.templateservice.model.StructureRules;
 import com.gateway.templateservice.model.TemplateEntity;
 import com.gateway.templateservice.parser.CSVParser;
@@ -24,10 +27,91 @@ public class TemplateServiceImpl implements TemplateService {
 
     @Autowired
     private TemplateStorage storage;
+    
+    @Autowired
+    private HashUtil hashUtil;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
+    public RegistrationResponse registerApp(RegistrationRequest request, MultipartFile templateFile) {
+        try {
+            String appNameHash = hashUtil.hashAppName(request.getAppName());
+            
+            // Check if app-category combination already exists
+            if (storage.existsByAppHashAndCategory(appNameHash, request.getCategory())) {
+                // Update existing template
+                TemplateEntity existingTemplate = storage.findByAppHashAndCategory(appNameHash, request.getCategory());
+                updateTemplate(existingTemplate, templateFile, request);
+                return new RegistrationResponse(true, "Template updated successfully", appNameHash);
+            } else {
+                // Create new template
+                TemplateEntity newTemplate = createTemplate(templateFile, request, appNameHash);
+                storage.save(newTemplate, templateFile.getBytes());
+                return new RegistrationResponse(true, "App registered successfully", appNameHash);
+            }
+        } catch (Exception e) {
+            return new RegistrationResponse(false, "Registration failed: " + e.getMessage(), null);
+        }
+    }
+    
+    @Override
+    public List<String> getCategoriesByAppHash(String appNameHash) {
+        List<TemplateEntity> templates = storage.findByAppHash(appNameHash);
+        return templates.stream()
+                .map(TemplateEntity::getCategory)
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+    }
+    
+    @Override
+    public TemplateMetadataResponse getMetadataByAppAndCategory(String appNameHash, String category) {
+        TemplateEntity t = storage.findByAppHashAndCategory(appNameHash, category);
+        if (t == null)
+            throw new RuntimeException("Template not found for app and category");
+        try {
+            TemplateMetadataResponse resp = new TemplateMetadataResponse();
+            resp.setTemplateName(t.getOriginalFileName());
+            resp.setFileType(t.getFileType());
+            resp.setEndpoint(t.getEndpoint());
+            
+            Map<String, Object> metaMap = mapper.readValue(t.getMetadataJson(), Map.class);
+            List<String> headers = (List<String>) metaMap.get("headers");
+            resp.setHeaders(headers);
+            resp.setStructureRules((Map<String, Object>) metaMap.get("rules"));
+            return resp;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
+    public Object getJsonByAppAndCategory(String appNameHash, String category) {
+        TemplateEntity t = storage.findByAppHashAndCategory(appNameHash, category);
+        if (t == null)
+            throw new RuntimeException("Template not found for app and category");
+        try {
+            return mapper.readValue(t.getExtractedJson(), Object.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
+    public byte[] downloadByAppAndCategory(String appNameHash, String category) {
+        TemplateEntity t = storage.findByAppHashAndCategory(appNameHash, category);
+        if (t == null)
+            return null;
+        return storage.getFileBytes(t);
+    }
+    
+    @Override
+    public TemplateEntity getByAppAndCategory(String appNameHash, String category) {
+        return storage.findByAppHashAndCategory(appNameHash, category);
+    }
+
+    @Override
+    @Deprecated
     public TemplateResponse uploadTemplate(MultipartFile file, String category, String format, String templateName) {
         try {
             String ext = format == null || format.trim().isEmpty() ? getExt(file.getOriginalFilename())
@@ -75,6 +159,7 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     @Override
+    @Deprecated
     public TemplateMetadataResponse getMetadataByCategory(String category) {
         TemplateEntity t = storage.findByCategory(category);
         if (t == null)
@@ -95,6 +180,7 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     @Override
+    @Deprecated
     public Object getJsonByCategory(String category) {
         TemplateEntity t = storage.findByCategory(category);
         if (t == null)
@@ -107,6 +193,7 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     @Override
+    @Deprecated
     public byte[] downloadByCategoryAndFormat(String category, String format) {
         TemplateEntity t = storage.findByCategory(category);
         if (t == null)
@@ -132,19 +219,26 @@ public class TemplateServiceImpl implements TemplateService {
     // ---------- helpers ----------
     private Object parseBytes(byte[] bytes, String ext) throws IOException {
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+        System.out.println("🔍 Parsing file with extension: " + ext);
+        
         switch (ext.toLowerCase()) {
             case "csv":
+                System.out.println("📈 Using CSV parser");
                 return CSVParser.parse(bis);
             case "txt":
+                System.out.println("📄 Using TXT parser");
                 return TxtParser.parse(bis);
             case "psv":
             case "pipe":
+                System.out.println("📄 Using Pipe parser");
                 return PipeParser.parse(bis);
             case "xls":
             case "xlsx":
+                System.out.println("📊 Using Excel parser");
                 return ExcelParser.parse(bis);
             default:
-                throw new RuntimeException("unsupported");
+                System.err.println("❌ Unsupported file extension: " + ext);
+                throw new RuntimeException("Unsupported file type: " + ext);
         }
     }
 
@@ -164,6 +258,55 @@ public class TemplateServiceImpl implements TemplateService {
 
         meta.put("rules", rules);
         return meta;
+    }
+
+    private TemplateEntity createTemplate(MultipartFile file, RegistrationRequest request, String appNameHash) throws Exception {
+        String ext = getExt(file.getOriginalFilename());
+        System.out.println("📁 Creating template - File: " + file.getOriginalFilename() + ", Extension: " + ext);
+        
+        TemplateEntity entity = new TemplateEntity();
+        entity.setId(UUID.randomUUID().toString());
+        entity.setAppName(request.getAppName());
+        entity.setAppNameHash(appNameHash);
+        entity.setEndpoint(request.getEndpoint());
+        entity.setCategory(request.getCategory());
+        entity.setOriginalFileName(file.getOriginalFilename());
+        entity.setFileType(ext);
+
+        byte[] bytes = file.getBytes();
+        System.out.println("📁 File size: " + bytes.length + " bytes");
+        
+        try {
+            Object parsed = parseBytes(bytes, ext);
+            System.out.println("✅ Parsing successful");
+            
+            entity.setExtractedJson(mapper.writeValueAsString(parsed));
+            Map<String, Object> meta = buildMetadata(parsed);
+            entity.setMetadataJson(mapper.writeValueAsString(meta));
+            
+        } catch (Exception e) {
+            System.err.println("❌ Parsing failed: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+        
+        return entity;
+    }
+    
+    private void updateTemplate(TemplateEntity existingTemplate, MultipartFile file, RegistrationRequest request) throws Exception {
+        String ext = getExt(file.getOriginalFilename());
+        existingTemplate.setEndpoint(request.getEndpoint());
+        existingTemplate.setOriginalFileName(file.getOriginalFilename());
+        existingTemplate.setFileType(ext);
+
+        byte[] bytes = file.getBytes();
+        Object parsed = parseBytes(bytes, ext);
+        existingTemplate.setExtractedJson(mapper.writeValueAsString(parsed));
+
+        Map<String, Object> meta = buildMetadata(parsed);
+        existingTemplate.setMetadataJson(mapper.writeValueAsString(meta));
+        
+        storage.save(existingTemplate, bytes);
     }
 
     private String getExt(String filename) {

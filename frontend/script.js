@@ -1,7 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // Get app name hash from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const appNameHash = urlParams.get('app');
+    
+    if (!appNameHash) {
+        return; // Error already handled in HTML
+    }
+    
     // DOM elements
     const categorySelect = document.getElementById("categorySelect");
-    const filetypeSelect = document.getElementById("filetypeSelect");
     const selectionError = document.getElementById("selectionError");
     
     const templateSection = document.getElementById("templateSection");
@@ -11,7 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const downloadStatus = document.getElementById("downloadStatus");
     
     const fileInput = document.getElementById("fileInput");
-    const applicationInput = document.getElementById("applicationInput");
     const uploadBtn = document.getElementById("uploadBtn");
     const uploadStatus = document.getElementById("uploadStatus");
 
@@ -27,13 +33,18 @@ document.addEventListener("DOMContentLoaded", () => {
         loadingOption.selected = true;
         categorySelect.appendChild(loadingOption);
 
-        fetch("http://localhost:8082/api/gateway/templates/categories")
+        fetch(`http://localhost:8081/templates/app/${appNameHash}/categories`)
             .then((response) => {
                 if (!response.ok) throw new Error("Network response was not ok");
                 return response.json();
             })
             .then((categories) => {
                 categorySelect.innerHTML = '<option value="">Select Category</option>';
+                
+                if (categories.length === 0) {
+                    categorySelect.innerHTML = '<option value="" disabled>No templates available for this app</option>';
+                    return;
+                }
                 
                 categories.forEach((category) => {
                     const option = document.createElement("option");
@@ -44,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch((err) => {
                 console.error("Error fetching categories:", err);
-                selectionError.textContent = "Could not load categories. Please refresh.";
+                selectionError.textContent = "Could not load categories for this app. Please check if the app is registered.";
                 categorySelect.innerHTML = '<option value="" disabled>No categories available</option>';
             });
     }
@@ -54,9 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // =============================
     function handleTemplateSelection() {
         const category = categorySelect.value;
-        const filetype = filetypeSelect.value;
         
-        if (!category || !filetype) {
+        if (!category) {
             templateSection.style.display = "none";
             currentTemplate = null;
             return;
@@ -65,44 +75,83 @@ document.addEventListener("DOMContentLoaded", () => {
         selectionError.textContent = "";
         templateSection.style.display = "block";
         
-        // Load template metadata
-        loadTemplateMetadata(category, filetype);
+        // Load template metadata (filetype will be determined from template)
+        loadTemplateMetadata(category, null);
     }
 
     function loadTemplateMetadata(category, filetype) {
         templateNameEl.textContent = "Loading...";
-        headerPreview.innerHTML = '<span class="placeholder-text">Loading headers...</span>';
+        headerPreview.innerHTML = '<span class="placeholder-text">Loading template...</span>';
         
-        const url = `http://localhost:8081/templates/${encodeURIComponent(category)}/metadata`;
+        // Fetch full template data using app-specific endpoint
+        const url = `http://localhost:8081/templates/app/${appNameHash}/${encodeURIComponent(category)}/json`;
         
         fetch(url)
             .then((response) => {
-                if (!response.ok) throw new Error("Failed to fetch metadata");
+                if (!response.ok) throw new Error("Failed to fetch template");
                 return response.json();
             })
-            .then((meta) => {
-                currentTemplate = { category, filetype, metadata: meta };
-                
-                templateNameEl.textContent = `${category} Template (${filetype.toUpperCase()})`;
-                
-                headerPreview.innerHTML = "";
-                if (Array.isArray(meta.headers) && meta.headers.length > 0) {
-                    meta.headers.forEach((header) => {
-                        const pill = document.createElement("div");
-                        pill.className = "header-pill";
-                        pill.textContent = String(header);
-                        headerPreview.appendChild(pill);
+            .then((templateData) => {
+                // Also fetch metadata to get file type
+                return fetch(`http://localhost:8081/templates/app/${appNameHash}/${encodeURIComponent(category)}/metadata`)
+                    .then(response => response.json())
+                    .then(metadata => {
+                        currentTemplate = { 
+                            appNameHash, 
+                            category, 
+                            filetype: metadata.fileType, 
+                            data: templateData 
+                        };
+                        
+                        templateNameEl.textContent = `${category} Template (${metadata.fileType.toUpperCase()})`;
+                        
+                        // Render full template as table
+                        renderTemplateTable(templateData);
                     });
-                } else {
-                    headerPreview.innerHTML = '<span class="placeholder-text">No headers available</span>';
-                }
             })
             .catch((err) => {
-                console.error("Error fetching template metadata:", err);
-                selectionError.textContent = "Could not load template metadata.";
+                console.error("Error fetching template:", err);
+                selectionError.textContent = "Could not load template for this app.";
                 templateSection.style.display = "none";
                 currentTemplate = null;
             });
+    }
+    
+    function renderTemplateTable(data) {
+        if (!Array.isArray(data) || data.length === 0) {
+            headerPreview.innerHTML = '<span class="placeholder-text">No template data available</span>';
+            return;
+        }
+        
+        const headers = Object.keys(data[0]);
+        
+        let tableHTML = '<table class="template-table">';
+        
+        // Header row
+        tableHTML += '<thead><tr>';
+        headers.forEach(header => {
+            tableHTML += `<th>${header}</th>`;
+        });
+        tableHTML += '</tr></thead>';
+        
+        // Data rows (show first 5 rows as preview)
+        tableHTML += '<tbody>';
+        const previewRows = data.slice(0, 5);
+        previewRows.forEach(row => {
+            tableHTML += '<tr>';
+            headers.forEach(header => {
+                tableHTML += `<td>${row[header] || ''}</td>`;
+            });
+            tableHTML += '</tr>';
+        });
+        
+        if (data.length > 5) {
+            tableHTML += `<tr><td colspan="${headers.length}" class="more-rows">... and ${data.length - 5} more rows</td></tr>`;
+        }
+        
+        tableHTML += '</tbody></table>';
+        
+        headerPreview.innerHTML = tableHTML;
     }
 
     // =============================
@@ -116,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         downloadBtn.disabled = true;
         downloadBtn.textContent = "Downloading...";
         
-        const url = `http://localhost:8081/templates/${encodeURIComponent(currentTemplate.category)}/download?format=${currentTemplate.filetype}`;
+        const url = `http://localhost:8081/templates/app/${currentTemplate.appNameHash}/${encodeURIComponent(currentTemplate.category)}/download`;
         
         fetch(url)
             .then((response) => {
@@ -127,7 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = `${currentTemplate.category}-template.${currentTemplate.filetype}`;
+                a.download = `${currentTemplate.category}-template.${currentTemplate.filetype || 'csv'}`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -155,17 +204,10 @@ document.addEventListener("DOMContentLoaded", () => {
         uploadStatus.className = "status-message";
         
         const file = fileInput.files[0];
-        const application = applicationInput.value.trim();
         const category = categorySelect.value;
         
         if (!file) {
             uploadStatus.textContent = "Please select a file to upload.";
-            uploadStatus.className = "status-message error";
-            return;
-        }
-        
-        if (!application) {
-            uploadStatus.textContent = "Please enter an application name.";
             uploadStatus.className = "status-message error";
             return;
         }
@@ -178,8 +220,9 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("application", application);
+        formData.append("application", appNameHash); // Use app hash as application identifier
         formData.append("category", category);
+        formData.append("appNameHash", appNameHash);
         
         uploadBtn.disabled = true;
         uploadBtn.textContent = "Uploading...";
@@ -206,9 +249,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.log("JSON as String:", JSON.stringify(result.data, null, 2));
                 }
                 
-                // Clear form
+                // Clear form and fade upload button
                 fileInput.value = "";
-                applicationInput.value = "";
+                uploadBtn.classList.remove("btn-active");
+                uploadBtn.classList.add("btn-faded");
             })
             .catch((err) => {
                 console.error("Upload error:", err);
@@ -225,7 +269,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event listeners
     // =============================
     categorySelect.addEventListener("change", handleTemplateSelection);
-    filetypeSelect.addEventListener("change", handleTemplateSelection);
+    
+    // Show/fade upload button based on file selection
+    fileInput.addEventListener("change", () => {
+        if (fileInput.files.length > 0) {
+            uploadBtn.classList.remove("btn-faded");
+            uploadBtn.classList.add("btn-active");
+        } else {
+            uploadBtn.classList.remove("btn-active");
+            uploadBtn.classList.add("btn-faded");
+        }
+    });
     
     // Initialize
     loadCategories();

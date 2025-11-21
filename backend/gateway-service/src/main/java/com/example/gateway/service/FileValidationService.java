@@ -29,8 +29,12 @@ public class FileValidationService {
             throw new IllegalArgumentException("Uploaded file is empty.");
         }
 
-        // 2. Valid application
-        if (application == null || !allowedApps.contains(application)) {
+        // 2. Valid application (skip validation if wildcard is set)
+        if (application == null) {
+            throw new IllegalArgumentException("Application cannot be null.");
+        }
+        
+        if (!allowedApps.contains("*") && !allowedApps.contains(application)) {
             throw new IllegalArgumentException("Application '" + application + "' is not allowed.");
         }
 

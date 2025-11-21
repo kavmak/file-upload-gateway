@@ -5,6 +5,7 @@ import com.example.gateway.dto.TemplateDefinition;
 import com.example.gateway.dto.StructureRules;
 import com.example.gateway.dto.UploadResponse;
 
+import com.example.gateway.service.EndpointNotificationService;
 import com.example.gateway.service.ExtractionService;
 import com.example.gateway.service.FileValidationService;
 import com.example.gateway.service.StructureValidationService;
@@ -34,12 +35,30 @@ public class FileGatewayController {
 
     @Autowired
     private StructureValidationService structureValidationService;
+    
+    @Autowired
+    private EndpointNotificationService endpointNotificationService;
 
 
     /** ---------------------------------------------------------
-     *  GET ALL TEMPLATE CATEGORIES (From Template-Service)
+     *  GET APP-SPECIFIC TEMPLATE CATEGORIES
+     *  --------------------------------------------------------- */
+    @GetMapping("/templates/categories/{appNameHash}")
+    public ResponseEntity<?> fetchAppCategories(@PathVariable String appNameHash) {
+        try {
+            List<String> categories = templateLookupService.fetchAppCategories(appNameHash);
+            return ResponseEntity.ok(categories);
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body("Failed to fetch categories for app: " + e.getMessage());
+        }
+    }
+    
+    /** ---------------------------------------------------------
+     *  GET ALL TEMPLATE CATEGORIES (Legacy - Deprecated)
      *  --------------------------------------------------------- */
     @GetMapping("/templates/categories")
+    @Deprecated
     public ResponseEntity<?> fetchCategories() {
         try {
             Object raw = templateLookupService.fetchAllTemplatesRaw();
@@ -59,7 +78,8 @@ public class FileGatewayController {
     public ResponseEntity<UploadResponse> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam("application") String application,
-            @RequestParam("category") String category,  // <-- FIXED (was templateName)
+            @RequestParam("category") String category,
+            @RequestParam("appNameHash") String appNameHash,
             @RequestParam(value = "delimiter", required = false) String delimiter
     ) {
 
@@ -67,8 +87,8 @@ public class FileGatewayController {
             // STEP 1: Validate file existence, size, allowed app, etc.
             validationService.validate(file, application, null);
 
-            // STEP 2: Fetch template metadata from Template-Service
-            TemplateDefinition template = templateLookupService.fetchTemplate(category);
+            // STEP 2: Fetch template metadata from Template-Service using app-specific endpoint
+            TemplateDefinition template = templateLookupService.fetchAppTemplate(appNameHash, category);
 
             if (template == null) {
                 return ResponseEntity.status(500)
@@ -109,9 +129,18 @@ public class FileGatewayController {
                     rules
             );
 
-            // STEP 5: Return extracted JSON
+            // STEP 5: Send data to registered app endpoint
+            boolean notificationSent = endpointNotificationService.sendDataToAppEndpoint(
+                    appNameHash, category, extracted.getRows()
+            );
+            
+            String message = notificationSent ? 
+                    "File validated and data sent to application successfully" : 
+                    "File validated but failed to notify application";
+            
+            // STEP 6: Return extracted JSON
             return ResponseEntity.ok(
-                    new UploadResponse(true, "File valid", extracted.getRows())
+                    new UploadResponse(true, message, extracted.getRows())
             );
 
         } catch (IllegalArgumentException ex) {

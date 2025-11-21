@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - File Upload Gateway</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <h1>File Upload Gateway - Admin</h1>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <section class="admin-section">
+                <h2>Quick Links</h2>
+                <div class="admin-links">
+                    <a href="register.html" class="admin-link">
+                        <h3>📝 Register New Template</h3>
+                        <p>Register a new application with template for file upload validation</p>
+                    </a>
+                    
+                    <a href="index.html" class="admin-link">
+                        <h3>📤 File Upload Utility</h3>
+                        <p>Access the file upload interface (requires app parameter)</p>
+                    </a>
+                    
+                    <a href="test-app.html" class="admin-link">
+                        <h3>🧪 Test Integration</h3>
+                        <p>Test how external apps integrate with the utility</p>
+                    </a>
+                    
+                    <a href="http://localhost:8081/h2-console" target="_blank" class="admin-link">
+                        <h3>🗄️ Database Console</h3>
+                        <p>View registered templates in H2 database</p>
+                        <small>JDBC URL: jdbc:h2:mem:templatedb | User: sa</small>
+                    </a>
+                </div>
+                
+                <div class="service-status">
+                    <h3>Service Status</h3>
+                    <div class="status-checks">
+                        <div class="status-item">
+                            <span class="status-label">Template Service:</span>
+                            <span id="templateServiceStatus" class="status-indicator">Checking...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Gateway Service:</span>
+                            <span id="gatewayServiceStatus" class="status-indicator">Checking...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Check service status
+        async function checkServiceStatus() {
+            try {
+                const templateResponse = await fetch('http://localhost:8081/templates');
+                document.getElementById('templateServiceStatus').textContent = '✅ Running';
+                document.getElementById('templateServiceStatus').className = 'status-indicator success';
+            } catch {
+                document.getElementById('templateServiceStatus').textContent = '❌ Down';
+                document.getElementById('templateServiceStatus').className = 'status-indicator error';
+            }
+            
+            try {
+                const gatewayResponse = await fetch('http://localhost:8082/test/status');
+                document.getElementById('gatewayServiceStatus').textContent = '✅ Running';
+                document.getElementById('gatewayServiceStatus').className = 'status-indicator success';
+            } catch {
+                document.getElementById('gatewayServiceStatus').textContent = '❌ Down';
+                document.getElementById('gatewayServiceStatus').className = 'status-indicator error';
+            }
+        }
+        
+        checkServiceStatus();
+    </script>
+    
+    <style>
+        .admin-section {
+            padding: 2rem;
+        }
+        
+        .admin-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .admin-link {
+            display: block;
+            padding: 1.5rem;
+            background: #f8f9ff;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-link:hover {
+            background: #e8eaff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .admin-link h3 {
+            color: #F47920;
+            margin-bottom: 0.5rem;
+        }
+        
+        .admin-link p {
+            color: #666;
+            margin-bottom: 0;
+        }
+        
+        .admin-link small {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        .service-status {
+            background: #f0f0f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .status-checks {
+            display: grid;
+            gap: 0.5rem;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-label {
+            font-weight: 500;
+        }
+        
+        .status-indicator.success {
+            color: #4caf50;
+        }
+        
+        .status-indicator.error {
+            color: #f44336;
+        }
+    </style>
+</body>
+</html>

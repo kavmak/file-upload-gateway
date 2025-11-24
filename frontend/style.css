@@ -12,46 +12,86 @@ body {
 }
 
 /* ICICI-style header */
+
+
+
+
+/* HEADER */
 .icici-header {
+    width: 100%;
     background: linear-gradient(to bottom, #f36f21, #b03912);
-    color: #fff;
-    padding: 10px 32px;
+    padding: 14px 40px;
     display: flex;
+    justify-content: center;
     align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.icici-header-inner {
+    width: 100%;
+    max-width: 1380px;
+    display: flex;
     justify-content: space-between;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    align-items: center;
 }
 
-.icici-header-logo {
-    height: 44px;
-    display: block;
-}
-
+/* LEFT SECTION */
 .header-left {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
 }
 
+.icici-logo {
+    height: 42px;
+    width: auto;
+}
+
+.app-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+}
+
+/* RIGHT SECTION */
 .header-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 22px;
 }
 
-.user-name {
-    font-size: 14px;
+.ipal img {
+    height: 38px;
+    width: auto;
+    cursor: pointer;
 }
 
-.user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
+.support-block img {
+    height: 25px;
+    width: auto;
+}
+
+.country-select img {
+    height: 44px;
+    width: auto;
+    cursor: pointer;
+}
+
+.login-btn img {
+    height: 50px;
+    width: auto;
+    cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    .icici-header {
+        padding: 10px 20px;
+    }
+
+    .app-name {
+        display: none;
+    }
 }
 
 .container {
@@ -63,7 +103,7 @@ body {
 .card {
     background: white;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
@@ -81,7 +121,7 @@ body {
 .selection-section h2,
 .template-section h2,
 .upload-section h2 {
-    color: #F47920;
+    color: rgba(51, 54, 56, 1);
     margin-bottom: 1.5rem;
     font-size: 1.3rem;
     font-weight: 500;
@@ -103,12 +143,13 @@ body {
 .field-group label {
     font-weight: 500;
     margin-bottom: 0.5rem;
-    color: #555;
+    color: rgba(100, 105, 109, 1);
 }
 
 select,
 input[type="file"],
 input[type="text"] {
+    color: rgba(125, 130, 135, 1);
     padding: 0.75rem;
     border: 2px solid #e1e5e9;
     border-radius: 8px;
@@ -124,10 +165,8 @@ input[type="text"]:focus {
 }
 
 .template-info {
-    position: relative;
     background: #FFF3E0;
     padding: 1.5rem;
-    padding-right: 10rem;
     border-radius: 8px;
     border: 1px solid #FFCC80;
 }
@@ -165,42 +204,70 @@ input[type="text"]:focus {
 
 .template-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     margin-top: 1rem;
     font-size: 0.9rem;
+    background: #fafafa;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .template-table th,
 .template-table td {
-    padding: 0.5rem;
+    padding: 12px 16px;
     text-align: left;
-    border: 1px solid #ddd;
+    border: none;
+    border-bottom: 1px solid #e8e8e8;
 }
 
 .template-table th {
-    background: #F47920;
-    color: white;
-    font-weight: 500;
+    background: #f8f9fa;
+    color: #555;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e0e0e0;
 }
 
-.template-table tbody tr:nth-child(even) {
-    background: #FFF8F0;
+.template-table tbody tr {
+    background: #fff;
+    transition: background-color 0.2s ease;
 }
 
 .template-table tbody tr:hover {
-    background: #FFE0B2;
+    background: #f5f5f5;
+}
+
+.template-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .more-rows {
     text-align: center;
     font-style: italic;
-    color: #666;
-    background: #f0f0f0 !important;
+    color: #888;
+    background: #f9f9f9 !important;
 }
 
 .upload-area {
     display: grid;
     gap: 1.5rem;
+}
+
+.file-upload-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.file-upload-row input[type="file"] {
+    flex: 1;
+}
+
+.file-upload-row .btn {
+    flex-shrink: 0;
 }
 
 .btn {
@@ -214,16 +281,26 @@ input[type="text"]:focus {
 }
 
 .btn-download {
-    background: #F47920;
+    background: #F57C00;
     color: white;
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+    margin-top: 2rem;
+    float: right;
+    clear: both;
 }
 
 .btn-download:hover:not(:disabled) {
     background: #E65100;
     transform: translateY(-1px);
+}
+
+.template-table-container {
+    margin-bottom: 1rem;
+}
+
+.download-button-container {
+    text-align: right;
+    margin-top: 1rem;
+    clear: both;
 }
 
 .btn-upload {
@@ -375,25 +452,34 @@ input[type="text"]:focus {
     .dropdown-row {
         grid-template-columns: 1fr;
     }
-    
+
     .template-info {
         flex-direction: column;
         gap: 1rem;
         text-align: center;
     }
-    
+
     .container {
         margin: 1rem auto;
         padding: 0 0.5rem;
     }
-    
+
     .selection-section,
     .template-section,
     .upload-section,
     .registration-section {
-        padding: 1.5rem;
+        /* padding: 1.5rem; */
+        padding-left: 2rem;
+        padding-right: 2rem;
+        padding-bottom: 0.5rem;
+        padding-top: 1.5rem;
     }
-    
+
+    .file-upload-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
     .hash-display,
     .url-display {
         flex-direction: column;

@@ -1,21 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Upload Gateway</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <!-- Header -->
     <header class="icici-header">
-        <div class="header-left">
-            <!-- Use your ICICI header PNG here (change path as needed) -->
-            <img src="ICICI_HeaderLogo.png" alt="ICICI Bank - File Upload Gateway" class="icici-header-logo" />
-        </div>
-        <div class="header-right">
-            <span class="user-name">Welcome, User</span>
-            <div class="user-avatar">U</div>
+        <div class="icici-header-inner">
+
+            <!-- LEFT SECTION -->
+            <div class="header-left">
+                <img class="icici-logo" src="ICICI_HeaderLogo (1).png" alt="ICICI Logo" />
+                <span class="app-name">TestApp1</span>
+            </div>
+
+            <!-- RIGHT SECTION -->
+            <div class="header-right">
+
+                <!-- 1800 1080 phone -->
+                <div class="support-block">
+                    <img src="Frame 1410086205-3.png" alt="Support Phone" />
+                </div>
+
+                <!-- iPal Icon -->
+                <div class="ipal">
+                    <img src="icons8-topic 1-2.png" alt="iPal" />
+                </div>
+
+                <!-- Country Selector -->
+                <div class="country-select">
+                    <img src="Frame 157898-2.png" alt="Country Selector" />
+                </div>
+
+                <!-- Login Button -->
+                <div class="login-btn">
+                    <img src="New Button Set.png" alt="Login" onclick="loginAction()" />
+                </div>
+
+            </div>
         </div>
     </header>
 
@@ -54,9 +80,11 @@
                 <div class="upload-area">
                     <div class="field-group">
                         <label for="fileInput">Select File</label>
-                        <input type="file" id="fileInput" accept=".csv,.xlsx,.txt">
+                        <div class="file-upload-row">
+                            <input type="file" id="fileInput" accept=".csv,.xlsx,.txt">
+                            <button id="uploadBtn" class="btn btn-upload btn-faded">Upload File</button>
+                        </div>
                     </div>
-                    <button id="uploadBtn" class="btn btn-upload btn-faded">Upload File</button>
                 </div>
                 <div id="uploadStatus" class="status-message"></div>
             </section>
@@ -67,11 +95,12 @@
         // Extract appName from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const appNameHash = urlParams.get('app');
-        
+
         if (!appNameHash) {
             document.body.innerHTML = '<div style="text-align: center; margin-top: 2rem; color: #dc3545;"><h2>Error: Missing app parameter</h2><p>This utility must be called with an app parameter.</p></div>';
         }
     </script>
     <script src="script.js"></script>
 </body>
+
 </html>

@@ -1,57 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Template Registration - File Upload Gateway</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <!-- Header -->
-    <header class="icici-header">
-        <div class="header-left">
-            <img src="ICICI_HeaderLogo.png" alt="ICICI Bank - Template Registration" class="icici-header-logo" />
-        </div>
-        <div class="header-right">
-            <span class="user-name">Welcome, Admin</span>
-            <div class="user-avatar">A</div>
-        </div>
-    </header>
+    
 
     <main class="container">
         <div class="card">
             <section class="registration-section">
                 <h2>Register New App Template</h2>
                 <p>Register your application with a template to enable file upload validation.</p>
-                
+
                 <form id="registrationForm" class="registration-form">
                     <div class="field-group">
                         <label for="appName">Application Name</label>
                         <input type="text" id="appName" placeholder="Enter your application name" required>
                     </div>
-                    
+
                     <div class="field-group">
                         <label for="category">Category</label>
                         <input type="text" id="category" placeholder="e.g., invoice, employee, bankstatement" required>
                     </div>
-                    
+
                     <div class="field-group">
                         <label for="endpoint">Endpoint URL</label>
                         <input type="url" id="endpoint" placeholder="https://your-app.com/api/receive-data" required>
                         <small>URL where validated data will be sent</small>
                     </div>
-                    
+
                     <div class="field-group">
                         <label for="templateFile">Template File</label>
                         <input type="file" id="templateFile" accept=".csv,.xlsx,.txt" required>
                         <small>Upload a sample template file (CSV, Excel, or Text)</small>
                     </div>
-                    
+
                     <button type="submit" class="btn btn-register btn-faded">Register Template</button>
                 </form>
-                
+
                 <div id="registrationStatus" class="status-message"></div>
-                
+
                 <div id="successInfo" class="success-info" style="display: none;">
                     <h3>Registration Successful!</h3>
                     <div class="app-hash-info">
@@ -76,4 +69,5 @@
 
     <script src="register.js"></script>
 </body>
+
 </html>

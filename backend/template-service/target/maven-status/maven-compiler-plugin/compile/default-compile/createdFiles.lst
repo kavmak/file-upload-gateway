@@ -1,5 +1,5 @@
-com\gateway\templateservice\model\TemplateEntity.class
 com\gateway\templateservice\TemplateServiceApplication.class
 com\gateway\templateservice\storage\TemplateStorage.class
+com\gateway\templateservice\model\TemplateEntity.class
 com\gateway\templateservice\dto\TemplateResponse.class
 com\gateway\templateservice\dto\TemplateMetadataResponse.class
